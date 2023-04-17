@@ -1,22 +1,20 @@
 const axios  = require("axios");
-
 const STATUS_OK = 200;
 const STATUS_NOT_FOUND = 404;
 const STATUS_ERROR = 500;
 const URL = process.env.API_URL;
 
-const getCharById = (req, res) => {
+const getCharById = async (req, res) => {
 
-  const {id} = req.params;
-  
-  axios.get(`${URL}${id}`)
-  .then(response => response.data)
-  .then(data => {
-    if(!data) res.status(STATUS_NOT_FOUND).json({message: "Not Found"});
+  try {
+  const { id } = req.params;
+  const response = await axios.get(`${URL}${id}`)
 
-    const {id, status, name, species, origin, image, gender} = data;
+    if(!response.data.name) res.status(STATUS_NOT_FOUND).json({message: "Not Found"});
+
+    const {id : idCharacter, status, name, species, origin, image, gender} = response.data;
     const character = {
-      id,
+      id: idCharacter,
       status,
       name,
       species,
@@ -25,8 +23,11 @@ const getCharById = (req, res) => {
       gender
     }
     res.status(STATUS_OK).json(character);
-  })
-  .catch(error  =>  res.status(STATUS_ERROR).json({error: error.message}));
+  
+  } catch (error) {
+    res.status(STATUS_ERROR).json({error: JSON.stringify(error)})
+  }
+    
 }
 
 module.exports =  getCharById;
